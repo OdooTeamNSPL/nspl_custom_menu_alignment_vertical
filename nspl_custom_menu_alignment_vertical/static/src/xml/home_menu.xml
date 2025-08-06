@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="web_enterprise.HomeMenu.InputAndAppsVertical">
+
+        <input t-ref="input" type="text" class="o_search_hidden visually-hidden w-auto" data-allow-hotkeys="true" t-on-input="_onInputSearch" t-on-blur="_onInputBlur" t-on-compositionstart="_onCompositionStart"
+            role="combobox"
+            t-att-aria-activedescendant="'result_app_' + state.focusedIndex"
+            t-att-aria-expanded="displayedApps.length ? 'true' : 'false'"
+            aria-autocomplete="list"
+            aria-haspopup="listbox"
+        />
+        <!-- When the subscription has expired, the expiration panel is show over the whole UI instead of here -->
+        <ExpirationPanel t-if="subscription.warningType and !subscription.isWarningHidden and subscription.daysLeft &lt;= 30 and subscription.daysLeft > 0"/>
+        <div t-if="state.menuLayout === 'vertical' and Object.keys(state.apps_by_category || {}).length"
+                class="o_apps_by_category d-flex gap-5 mt-5 px-2 justify-content-start px-4"
+                role="listbox">
+            <div t-foreach="Object.keys(state.apps_by_category).sort()" t-as="category" t-key="category">
+                <div class="d-flex flex-column align-items-center">
+                    <h4 class="text-primary fw-bold text-uppercase mb-3 text-center" style="font-size: 1rem;">
+                        <t t-esc="category"/>
+                    </h4>
+                    <t t-foreach="state.apps_by_category[category]" t-as="app" t-key="app.id">
+                        <div class="o_draggable mb-3">
+                            <a t-att-id="'result_app_' + app.id"
+                                class="o_app o_menuitem d-flex flex-column align-items-center rounded-3 p-2"
+                                t-att-class="{o_focused: state.focusedIndex === app_index}"
+                                t-att-data-menu-xmlid="app.xmlid"
+                                t-att-href="app.href"
+                                t-on-click.prevent="() => this._onAppClick(app)">
+                                <img t-if="app.webIconData" class="o_app_icon rounded-3 mb-2"
+                                        style="width: 50px; height: 50px;" t-attf-src="{{app.webIconData}}"/>
+                                <div t-else="" class="o_app_icon d-flex justify-content-center align-items-center rounded-3 mb-2"
+                                        style="width: 50px; height: 50px;"
+                                        t-attf-style="background-color: {{app.webIcon.backgroundColor}};">
+                                    <i t-attf-class="{{app.webIcon.iconClass}}" t-attf-style="color: {{app.webIcon.color}};"/>
+                                </div>
+                                <div class="o_caption text-center" t-esc="app.label or app.name"/>
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div style="min-width: 20px;" class="d-none d-md-block"/>
+
+        </div>
+
+        <!-- 🧱 Default layout (flat, ungrouped) -->
+        <div t-elif="displayedApps.length" role="listbox" class="o_apps row user-select-none mt-5 mx-0">
+            <div t-foreach="displayedApps" t-as="app" t-key="app.id" class="col-3 col-md-2 o_draggable mb-3 px-0">
+                <a t-att-id="'result_app_' + app_index"
+                    role="option"
+                    t-att-aria-selected="state.focusedIndex === app_index ? 'true' : 'false'"
+                    class="o_app o_menuitem d-flex flex-column rounded-3 justify-content-start align-items-center w-100 p-1 p-md-2"
+                    t-att-class="{o_focused: state.focusedIndex === app_index}"
+                    t-att-data-menu-xmlid="app.xmlid"
+                    t-att-href="app.href"
+                    t-on-click.prevent="() => this._onAppClick(app)">
+                    <img t-if="app.webIconData" class="o_app_icon rounded-3" t-attf-src="{{app.webIconData}}"/>
+                    <div t-else="" class="o_app_icon position-relative d-flex justify-content-center align-items-center p-2 rounded-3 ratio ratio-1x1"
+                            t-attf-style="background-color: {{app.webIcon.backgroundColor}};">
+                        <i t-attf-class="{{app.webIcon.iconClass}} position-relative w-auto h-auto" t-attf-style="color: {{app.webIcon.color}};"/>
+                    </div>
+                    <div class="o_caption w-100 text-center text-truncate mt-2" t-esc="app.label or app.name"/>
+                </a>
+            </div>
+        </div>
+        <div t-else="">
+            <!-- No result -->
+            <div id="result_menu_0" role="option" aria-selected="true" class="o_no_result">
+                No result
+            </div>
+        </div>
+
+    </t>
+
+    <t t-inherit="web_enterprise.HomeMenu" t-inherit-mode="extension">
+        <xpath expr="//div[@class='container']" position="replace">
+
+            <t t-if="state.menuLayout === 'vertical'">
+                <div class="px-3">
+                    <t t-call="web_enterprise.HomeMenu.InputAndAppsVertical"/>
+                </div>
+            </t>
+
+            <t t-else="">
+                <div class="container">
+                    <t t-call="web_enterprise.HomeMenu.InputAndAppsVertical"/>
+                </div>
+            </t>
+
+        </xpath>
+    </t>
+</templates>
